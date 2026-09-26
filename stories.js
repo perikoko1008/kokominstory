@@ -1,7 +1,7 @@
 // 『星喰みのアリア』選択肢は、完全プレイログに記載された文言と順序を採用。
-// 配信で選ばれた選択だけが記録済みの本編につながります。未選択肢の後日談は資料にないため収録していません。
+// 配信未選択の選択には、無料で遊べるサイト版の短い分岐を追加し、本筋へ合流させます。
 const letters='ABCDEF';
-function loggedScene(chapter,title,text,options,selectedIndex,next){return {chapter,title,text,choices:options.map((option,index)=>({text:`${letters[index]} ${option}`,to:index===selectedIndex?next:'aria-unrecorded',recorded:index===selectedIndex}))};}
+function loggedScene(chapter,title,text,options,selectedIndex,next){return {chapter,title,text,choices:options.map((option,index)=>({text:`${letters[index]} ${option}`,to:index===selectedIndex?next:null,recorded:index===selectedIndex}))};}
 window.STORIES = [{id:'hoshihami-aria-01',title:'星喰みのアリア',subtitle:'君が選ぶたび、世界は変わる',genre:'星 / 運命 / 選択',length:'全18選択',cover:'cover-night',symbol:'星',status:'PLAYABLE',description:'七つの願い星が浮かぶ世界。星を喰らう者と呼ばれたレオンは、アリアと失われた記憶に出会う。',sourceNote:'完全プレイログ収録の18選択を再現',start:'aria-01',scenes:{
  'aria-01':loggedScene('序章　星が落ちた夜','01　「星喰み」の出現','七つの願い星が浮かぶ世界で、一つの星が夜空から消えた。森へ巨大な光の柱が落ち、町が騒然となる。18歳の見習い配達人レオンの右手には星型の紋章が現れていた。\n\n窓の外には白い髪の少女と巨大な黒い獣。少女は叫ぶ。「私を……星に返して！！」',['少女を家へ入れる','少女を置いて逃げる','黒い獣から少女を守る','「星に返す」とは何か聞く','獣を観察'],2,'aria-02'),
  'aria-02':loggedScene('第一幕　黒い獣と星喰み','02　「三つから選ぶな」の意味','星紋から青い盾が現れて黒い獣を退ける。獣の胸には白い星の光が埋め込まれていた。「返せ。その星を返せ」――獣はレオンの中にある何かを取り戻そうとしている。星紋から黒い光が漏れ、「喰え。星を。」という声が響く。\n\nレオンは「三つから選ぶな」の意味を尋ねた。選ばないこと自体が隠しルートにつながるという。鐘が鳴り、少女は七つ目の星が落ちる前に王都へ行く必要があると告げた。',['少女を問い詰める','逃げる','自分の中に何があるか聞く','「三つから選ぶな」の意味を聞く','獣を観察'],3,'aria-03'),
@@ -22,6 +22,36 @@ window.STORIES = [{id:'hoshihami-aria-01',title:'星喰みのアリア',subtitle
  'aria-17':loggedScene('第八幕　八つ目の星','17　🎁ギフト介入','配信ではギフト介入により世界が停止し、透明な星が現れた。「まだ存在しない星」「選ばなかった可能性」を映し出す特殊なイベント。サイト版ではギフト購入なしで同じ選択を遊べる。',['黒い太陽へ突撃','アリアへ星の力を託す','少年と完全融合','黒い太陽に正体を問う','🎁ギフト介入'],4,'aria-18'),
  'aria-18':loggedScene('最終幕　歴史を書き換える星','18　透明な星の選択','透明な星は、まだ存在しない未来を映している。レオンはその星を黒い太陽へ投げ込む。世界が白く染まり、「星を喰らう」という概念が星を奪い願いを消そうとしていた真実が明らかになる。',['透明な星を喰らう','アリアへ渡す','少年へ渡す','黒い太陽へ投げ込む','壊す','🎁さらに介入'],3,'aria-true'),
  'aria-true':{chapter:'エピローグ',title:'TRUE END　八つ目の星',text:'透明な星が歴史そのものを書き換えた。消えた四つの星を含め七つすべてが夜空へ戻る。アリアも銀髪の少年も消えず、レオンの星紋は七色に輝く。\n\n数か月後、王都では「世界を救うのは一人ではない」という新しい考えが広がっていた。レオン、アリア、銀髪の少年、そして黒い獣は夜空を見上げる。七つの星の中心には、八つ目の透明な星が浮かぶ。それは、これから作られる未来だった。\n\n世界を救ったのは、星喰みではなかった。選び続けた者たちだった。',ending:{title:'八つ目の星',type:'TRUE END — 配信選択再現',mark:'八',text:'配信ログに記録された選択をたどり、TRUE ENDへ到達しました。'}},
- 'aria-unrecorded':{chapter:'分岐記録の外',title:'この先は未記録',text:'この選択肢は配信で提示されましたが、添付ログには選択後の展開が記録されていません。記録にない物語を配信の実際の結末として補わず、ここで区切ります。',ending:{title:'未記録の分岐',type:'未収録ルート',mark:'…',text:'選ばれた本編ルートは、最初から読み直してたどれます。'}}
 }}];
+
+// 配信では選ばれなかった選択肢にも、サイト版の短い場面を用意します。
+// 各分岐は端末内で文章を組み立てるため、外部AIや追加料金は不要です。
+function branchText(option,source,next){
+ const action=option.replace(/^[A-F] /,'');
+ const nextLabel=next.ending?'最後の決断':next.title;
+ if(action.includes('🎁')) return `配信中のギフト演出を、ここでは誰でも選べる物語の合図として描く。購入や送信は必要ない。レオンが「${action}」と決めた瞬間、星紋の奥で小さな光が灯り、アリアと銀髪の少年の声が重なった。「その気持ちは、ちゃんと届いたよ」。景色が静かに動き出し、${nextLabel}へ続く道が開く。`;
+ if(/逃げ|離れ|引き返|去る|置いて/.test(action)) return `レオンは「${action}」を選び、一歩退いた。逃げることも、距離を置くことも、彼なりの答えだった。けれど星紋がかすかに熱を帯び、遠くからアリアの声が届く。黒い獣も追い立てず、ただ道の先を見つめている。選んだ一歩は無駄にならず、${nextLabel}へつながっていく。`;
+ if(/攻撃|壊|砕|閉じ|喰ら|殺|突撃/.test(action)) return `レオンは「${action}」を選び、ためらいを振り切って動いた。衝撃が走り、星紋の光が一度だけ強く脈打つ。だが力だけでは決着しない。砕けた光の向こうに、アリアが守ろうとしているものが見えた。レオンはその意味を胸に刻み、${nextLabel}へ向かう。`;
+ if(/聞|尋|問|問い|確認|正体|どういう関係/.test(action)) return `レオンは「${action}」と問いかけた。アリアはすぐには答えず、銀髪の少年と視線を交わす。やがて彼女は、今はすべてを話せないと前置きして、ひとつだけ手がかりを明かした。「答えは、あなたが次に見るものの中にある」。その言葉を頼りに、${nextLabel}へ進む。`;
+ if(/何もしない|無視|黙|待つ/.test(action)) return `レオンは「${action}」を選び、静かに待った。沈黙の中で、星のまたたきと獣の息づかいが聞こえてくる。急いで答えを出さなかったからこそ、小さな変化に気づけた。アリアがうなずき、次に確かめるべき場所を示す。物語は${nextLabel}へ続く。`;
+ return `レオンは「${action}」を選んだ。その選択に応えるように、星紋が淡く輝く。アリアは驚き、黒い獣は警戒を解く。選んだ道がすべてを変えるわけではない。それでも、この一瞬の決断は二人の心に残った。新たな手がかりを胸に、レオンたちは${nextLabel}へ進む。`;
+}
+for(const story of window.STORIES){
+ for(const [sceneId,current] of Object.entries(story.scenes)){
+  if(current.ending) continue;
+  const recorded=current.choices.find(x=>x.recorded), nextId=recorded?.to;
+  if(!nextId||!story.scenes[nextId]) continue;
+  current.choices.forEach((choice,index)=>{
+   if(choice.recorded) return;
+   const branchId=`${sceneId}-if-${index+1}`;
+   const next=story.scenes[nextId], action=choice.text.replace(/^[A-F] /,'');
+   choice.to=branchId;
+   if(next.ending){
+    story.scenes[branchId]={siteBranch:true,progressNode:sceneId,chapter:`${current.chapter}　サイト版分岐`,title:`選んだ道：「${action}」`,text:branchText(choice.text,current,next)+`\n\n透明な星は、レオンが選ばなかった別の可能性を映し出す。彼はその可能性を消さず、仲間とともに新しい未来へ歩き出した。これは配信ログにない選択から生まれた、サイト版のもうひとつの結末。`,ending:{title:'選び続けた未来',type:'IF END — サイト版追加ルート',mark:'分',text:'配信のTRUE ENDとは異なる、あなたの選択から生まれた結末です。'}};
+   }else{
+    story.scenes[branchId]={siteBranch:true,progressNode:sceneId,chapter:`${current.chapter}　サイト版分岐`,title:`選んだ道：「${action}」`,text:branchText(choice.text,current,next),choices:[{text:'本筋の物語へ進む',to:nextId}]};
+   }
+  });
+ }
+}
 
